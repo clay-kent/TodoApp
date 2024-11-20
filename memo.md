@@ -1,0 +1,1 @@
+- 質問: これ複数PrioritySelectorがあったらkeyが一意じゃなくないか
