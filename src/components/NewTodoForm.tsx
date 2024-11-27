@@ -1,74 +1,71 @@
-import { useState } from "react";
+import React from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
 import { Todo, Priority } from "../types";
 import { v4 as uuid } from "uuid";
 import { faExclamationTriangle, faPlus } from '@fortawesome/free-solid-svg-icons';
-import IconButton from './IconButton';
-import PrioritySelector from './PrioritySelector';
-import DateSelector from './DateSelector';
-import { twMerge } from "tailwind-merge";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { twMerge } from "tailwind-merge";
+import PrioritySelector from "./PrioritySelector";
 
 interface NewTodoFormProps {
     addTodo: (newTodo: Todo) => void;
 }
 
+const keys = Object.keys(Priority) as [keyof typeof Priority]
+const toPriorityKey = (priority: Priority): keyof typeof Priority => Priority[priority] as keyof typeof Priority;
+const schema = z.object({
+    name: z.string().min(1, "名前は必須です"),//TODO: 入力フォームを赤く
+    priority: z.enum(keys),
+    deadline: z.string().optional().refine((val) => !val || !isNaN(Date.parse(val)), {
+        message: "Invalid date format",
+    }),
+});
+
+type FormValues = z.infer<typeof schema>;
+
 const NewTodoForm: React.FC<NewTodoFormProps> = ({ addTodo }) => {
-    const [newTodoName, setNewTodoName] = useState<string>("");
-    const [priority, setPriority] = useState<Priority>(Priority.Medium);
-    const [deadline, setDeadline] = useState<Date | null>(null);
-    const [newTodoNameError, setNewTodoNameError] = useState<boolean>(false);
-
-    const updateNewTodoName = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setNewTodoName(e.target.value);
-    };
-
-    const addNewTodoButtonHandler = () => {
-        if (newTodoName === "") {//バリデーション
-            setNewTodoNameError(true);
-            return;
-        }
-        setNewTodoNameError(false);
-        addNewTodo();
-        setNewTodoName("");
-        setPriority(Priority.Medium);
-        setDeadline(null);
+    const defaultValues = {
+        name: "",
+        priority: toPriorityKey(Priority.Medium),
+        deadline: undefined,
     }
 
-    const addNewTodo = () => {
-        const newTodo: Todo = {
+    const {
+        register, handleSubmit, formState: { errors }, reset,
+    } = useForm<FormValues>({
+        resolver: zodResolver(schema),
+        defaultValues
+    })
+
+    const onSubmit: SubmitHandler<FormValues> = (data: FormValues) => {
+        addTodo({
             id: uuid(),
-            name: newTodoName,
-            isDone: false,
-            priority: priority,
-            deadline: deadline || null,
-        };
-        addTodo(newTodo);
+            name: data.name,
+            priority: Priority[data.priority],
+            deadline: data.deadline ? new Date(data.deadline) : null,
+            isDone: false
+        });
+        reset()
     };
 
     return (
-        <div className="mt-4">
-            <input
-                id="newTodoName"
-                type="text"
-                value={newTodoName}
-                onChange={updateNewTodoName}
-                placeholder="タスク名"
-                className={twMerge(
-                    "w-full rounded-md border border-gray-300 px-2 py-1",
-                    newTodoNameError && "border-red-500 outline-red-500"
-                )}
-            />
-            {newTodoNameError && (
-                <div className="mt-1 text-sm text-red-500">
-                    <FontAwesomeIcon icon={faExclamationTriangle} className="mr-1" />
-                    {newTodoNameError}
-                </div>)}
+        <form onSubmit={handleSubmit(onSubmit)}>
+            <input {...register("name", { required: true })} />
+            <button type="submit" className={twMerge(`mr-2 rounded-md px-4 py-2 text-white`, 'bg-blue-500')}>
+                <FontAwesomeIcon icon={faPlus} />
+            </button>
+            {errors.name && <span><FontAwesomeIcon icon={faExclamationTriangle} />{errors.name.message}</span>}
             <div className="mt-2 flex items-center">
-                <PrioritySelector selectedPriority={priority} setPriority={setPriority} />
-                <DateSelector selectedDate={deadline} setDate={setDeadline} />
-                <IconButton onClick={addNewTodoButtonHandler} icon={faPlus} />
+                <PrioritySelector register={register} defaultPriority={defaultValues.priority} />
+                <input type="datetime-local"
+                    {...register("deadline")}
+                    id="deadline"
+                    className="rounded-md border border-gray-400 px-2 py-0.5"
+                />
             </div>
-        </div>
+        </form>
     );
 };
 
