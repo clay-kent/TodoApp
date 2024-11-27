@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/inittodos.ts","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/iconbutton.tsx","./src/components/newtodoform.tsx","./src/components/priorityselector.tsx","./src/components/todoitem.tsx","./src/components/todolist.tsx"],"version":"5.6.3"}
