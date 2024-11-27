@@ -62,10 +62,6 @@ const App = () => {
   return (
     <div className="mx-4 mt-10 max-w-2xl md:mx-auto">
       <h1 className="mb-4 text-2xl font-bold">TodoApp</h1>
-      {/*jsxで{}は式を埋め込む。
-      <TodoList {...todos} />について、本来、Boolean以外はプロパティ名=プロパティの形式である必要があるが、
-      スプレッド構文でオブジェクトとしてプロパティ名=プロパティの形式で展開しているので動作しちゃってる。
-      コンポーネントの引数に(todos: Todo[])を指定しても型チェックを貫通してオブジェクトとして代入されるので良い子はマネしないように*/}
       <TodoList todos={todos} updateIsDone={updateIsDone} removeTodo={removeTodo} />
       <NewTodoForm addTodo={addTodo} />
       <button

@@ -6,7 +6,7 @@ import { twMerge } from 'tailwind-merge';
 interface Props {
     onClick: () => void;
     icon: IconProp;
-    color?: 'bg-blue-500' | 'bg-red-500'; // 追加
+    color?: 'bg-blue-500' | 'bg-red-500';
 }
 
 const IconButton: React.FC<Props> = ({ onClick, icon, color = 'bg-blue-500' }) => (
